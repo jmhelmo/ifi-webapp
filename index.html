@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>App Educadores La Salle</title>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js" integrity="sha384-+sLIOodYLS7CIrQpBjl+C7nPvqq+FbNUBDunl/OZv93DB7Ln/533i8e/mZXLi/P+" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" rel="stylesheet">
+    <style>
+     .filtro {
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+} 
+    </style>
+</head>
+<body>
+  <!-- COMIENZO NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+  <a class="navbar-brand" href="#"><img src="https://i.ibb.co/mcLHR1V/La-Salle-Andaluci-a-blanco.png" height="30" class="mr-2" alt="">Educadores en IFI</a>
+<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-expanded="false">
+          Gestión
+        </a>
+        <div class="dropdown-menu">
+          <a class="dropdown-item" href="#">Añadir educador</a>
+          <a class="dropdown-item" href="#">Generación de listados</a>
+          <a class="dropdown-item" href="#">Promoción</a>
+        </div>
+      </li>
+    </ul>
+<form id="buscarForm" class="form-inline my-2 my-lg-0 position-relative">
+  <input class="form-control mr-sm-2 pl-5" type="search" placeholder="Buscar educador" aria-label="Buscar educador" id="myInput">
+  <i class="fas fa-search position-absolute" style="left: 12px; top: 50%; transform: translateY(-50%);"></i>
+</form>
+
+  </div>
+  </div>
+</nav>
+    <!-- FIN NAVBAR -->
+    <div class="container mt-4">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th scope="col"># <i class="fas fa-sort" onclick="ordenarTabla(0)"></i></th>
+                    <th scope="col">Nivel <i class="fas fa-sort" onclick="ordenarTabla(1)"></i> <i class="fas fa-filter fa-xs" onclick="mostrarFiltro(1, 'filtroNivel')"></i>
+  <div id="filtroNivel" class="filtro"></div>
+</th>
+<th>Colegio <i class="fas fa-sort" onclick="ordenarTabla(2)"></i> <i class="fas fa-filter fa-xs" onclick="mostrarFiltro(2, 'filtroColegio')"></i>
+  <div id="filtroColegio" class="filtro"></div>
+</th>
+
+                    <th scope="col">Apellidos <i class="fas fa-sort" onclick="ordenarTabla(3)"></i></th>
+                    <th scope="col">Nombre <i class="fas fa-sort" onclick="ordenarTabla(4)"></i></th>
+                    <th scope="col">Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="educadoresList" class="small"></tbody>
+        </table>
+    </div>
+
+<!-- Modal Ampliar información del educador -->
+<div class="modal fade" id="infoModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Información del educador</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <!-- Aquí irá la información del educador -->
+        <div id="observacionesList">
+          <!-- Las observaciones se agregarán aquí -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary btn-sm" onclick="agregarObservacion(currentEducador)"><i class="fas fa-plus"></i> Añadir observación</button>
+        <button class="btn btn-warning btn-sm" onclick="#"><i class="fas fa-edit"></i> Editar ficha</button>
+        <button class="btn btn-danger btn-sm" onclick="#"><i class="fas fa-archive"></i> Archivar educador</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+    <script>
+      // Cargar y mostrar la lista de educadores al cargar la página
+        google.script.run.withSuccessHandler(mostrarEducadores).obtenerEducadores();
+
+        // Función para mostrar la lista de educadores
+        function mostrarEducadores(educadores) {
+  const educadoresList = document.getElementById('educadoresList');
+  educadoresList.innerHTML = ''; // Limpiar la lista existente
+  if (!Array.isArray(educadores) || educadores.length === 0) {
+    educadoresList.innerHTML = '<tr><td colspan="6">No hay educadores disponibles.</td></tr>';
+    return;
+  }
+  
+  educadores.forEach(function(educador) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${educador[0] || ''}</td> 
+      <td>${educador[1] || ''}</td> 
+      <td>${educador[2] || ''}</td> 
+      <td><strong>${educador[3] || ''}</strong></td> 
+      <td><strong>${educador[4] || ''}</strong></td> 
+      <td>
+        <button class="btn btn-info btn-sm" onclick="mostrarModalInfo(${educador[0]})"><i class="fas fa-search-plus"></i></button>
+        <button class="btn btn-warning btn-sm" onclick="mostrarModalEditar(${educador[0]})"><i class="fas fa-edit"></i></button>
+        <button class="btn btn-danger btn-sm" onclick="archivarEducador(${educador[0]})"><i class="fas fa-archive"></i></button>
+      </td>
+    `;
+    educadoresList.appendChild(tr);
+  });
+}
+
+function mostrarModalInfo(id) {
+    google.script.run.withSuccessHandler(function(educador) {
+        google.script.run.withSuccessHandler(function(observaciones) {
+            
+            let idImagen = educador[9] || '1uvVn3K1LRq9Tq5mhvxNtTBSv9X3ewOZB';
+            
+            let observacionesHTML = '';
+            if (Array.isArray(observaciones) && observaciones.length > 0) {
+                observacionesHTML = observaciones.map(obs => `
+<table class="table table-hover">
+  <tbody>
+    <tr>
+      <td>
+        <div class="d-flex w-100 justify-content-between">
+          <small><i class="far fa-calendar-alt"></i> <strong>${obs.fecha}</strong></small>
+        </div>
+        <p class="mb-1" style="border-left: 2px solid #6E757C; padding-left: 10px; margin-left: 4px;">${obs.descripcion}</p>
+        <small><i class="far fa-user"></i> ${obs.nombreEditor}</small>
+      </td>
+    </tr>
+  </tbody>
+</table>
+                `).join('');
+            } else {
+                observacionesHTML = '<span class="badge badge-warning">No hay observaciones</span>';
+            }
+            
+            // Verificar si educador[7] o educador[8] tienen valor y mostrar o no el "Tutor/a asignado/a" acorde.
+            let tutorAsignadoHTML = (educador[7] || educador[8]) ?
+                `<address><strong>Tutor/a asignado/a</strong><br>${educador[7] || ''}<br>${educador[8] || ''}</address>` : '';
+            
+            // Crear el contenido del cuerpo del modal con la información del educador y las observaciones.
+            document.getElementById('modalBody').innerHTML = `
+              <div class="card border-0 mb-3 shadow p-3 mb-5 bg-white rounded" style="max-width: 740px;">
+              <div class="row no-gutters">
+                <div class="col-md-4">
+                  <img class="img-thumbnail" src="https://drive.google.com/uc?export=view&id=${idImagen}" alt="${educador[0]}">
+                </div>
+                <div class="col-md-8">
+                  <div class="card-body">
+                    <h4 class="card-title">${educador[4]} <small class="text-muted">${educador[3]}</small></h4>
+                    <h4 class="float-right"><span class="badge badge-primary">${educador[1]}</h4></p>
+                  <p class="card-text"><span class="text-muted"><i class="fas fa-school"></i></span> La Salle ${educador[2]}</strong>
+                  <br><span class="text-muted"><i class="fas fa-envelope"></i></span> ${educador[5]}
+                  <br><span class="text-muted"><i class="fas fa-phone"></i></span> ${educador[6]}</p><hr>
+                  ${tutorAsignadoHTML}
+                    <p class="card-text float-right"><code>#${educador[0]}#</code></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <h5>Registro de entrevistas y observaciones:</h5>
+            <div>${observacionesHTML}</div>
+            `;
+            $('#infoModal').modal('show');
+        }).obtenerObservaciones(id);
+    }).obtenerInfoEducador(id);
+}
+
+
+
+let ordenAscendente = true; // Variable para alternar entre orden ascendente y descendente
+
+function ordenarTabla(n) {
+  var table, rows, switching, i, x, y, shouldSwitch;
+  table = document.getElementById("educadoresList");
+  switching = true;
+  
+  
+  // Mientras se necesite hacer el cambio
+  while (switching) {
+    switching = false;
+    rows = table.rows;
+    
+    // Recorrer todas las filas de la tabla, excepto los encabezados
+    for (i = 0; i < (rows.length - 1); i++) {
+      shouldSwitch = false;
+      // Comparar los dos elementos
+      x = rows[i].getElementsByTagName("TD")[n];
+      y = rows[i + 1].getElementsByTagName("TD")[n];
+      
+      // Verifica si las dos filas deben cambiar de lugar
+      if (ordenAscendente ? x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase() : x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+        shouldSwitch = true;
+        break;
+      }
+    }
+    
+    // Si se necesita hacer el cambio, realiza el cambio y marca que se hizo un cambio
+    if (shouldSwitch) {
+      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+      switching = true;
+    }
+  }
+  
+  // Alternar el orden para la próxima vez que se haga clic en un encabezado
+  ordenAscendente = !ordenAscendente;
+
+  // Cambiar el icono a ascendente o descendente
+document.querySelector(`table thead th:nth-child(${n + 1}) i`).className = ordenAscendente ? 'fas fa-sort-up' : 'fas fa-sort-down';
+}
+
+function mostrarFiltro(n, divId) {
+  const table = document.getElementById("educadoresList");
+  const rows = table.getElementsByTagName("tr");
+  const uniqueOptions = new Set();
+  
+  // Crear el elemento select y añadir las opciones únicas
+  const select = document.createElement("select");
+  select.classList.add("form-control", "form-control-sm");
+
+  // Opción para eliminar el filtro
+const defaultOption = document.createElement("option");
+defaultOption.value = "all"; // puedes usar cualquier valor que prefieras para identificar esta opción
+defaultOption.textContent = "Filtrar";
+select.appendChild(defaultOption);
+
+
+  // Recorre las filas y añade las opciones únicas al Set
+  for (let i = 0; i < rows.length; i++) {
+    const cell = rows[i].getElementsByTagName("td")[n];
+    if (cell) {
+      uniqueOptions.add(cell.innerText || cell.textContent);
+    }
+  }
+  
+  // Añadir las opciones únicas al select
+  uniqueOptions.forEach(option => {
+    const optElement = document.createElement("option");
+    optElement.value = option;
+    optElement.textContent = option;
+    select.appendChild(optElement);
+  });
+  
+  // Asociar el event listener al select
+  select.addEventListener('change', function() {
+  const value = this.value;
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    const cell = row.getElementsByTagName("td")[n];
+    if (!value || (cell && (cell.innerText || cell.textContent) === value)) {
+      row.style.display = "";
+    } else if (cell) {
+      row.style.display = "none";
+    }
+  }
+  select.remove(); // Eliminar el select del DOM después de seleccionar una opción
+});
+
+
+  // Añadir el select al div correspondiente
+  const filtroDiv = document.getElementById(divId);
+  // Limpiar el div antes de añadir el nuevo select (en caso de que el usuario haga clic en el icono de filtro más de una vez)
+  filtroDiv.innerHTML = ""; 
+  filtroDiv.appendChild(select);
+}
+
+
+document.getElementById("buscarForm").addEventListener("input", function(){
+    var input, filter, table, tr, td4, td5, i, txtValue4, txtValue5;
+    input = document.getElementById("myInput");
+    filter = input.value.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    table = document.getElementById("educadoresList");
+    tr = table.getElementsByTagName("tr");
+    
+    for (i = 0; i < tr.length; i++) {
+        td4 = tr[i].getElementsByTagName("td")[3]; // Columna 4 (índice 3)
+        td5 = tr[i].getElementsByTagName("td")[4]; // Columna 5 (índice 4)
+        
+        if (td4 && td5) {
+            txtValue4 = td4.textContent || td4.innerText;
+            txtValue5 = td5.textContent || td5.innerText;
+            
+            txtValue4 = txtValue4.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            txtValue5 = txtValue5.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            
+            if (txtValue4.indexOf(filter) > -1 || txtValue5.indexOf(filter) > -1) {
+                tr[i].style.display = "";
+            } else {
+                tr[i].style.display = "none";
+            }
+        }
+    }
+});
+
+    </script>
+</body>
+</html>
