@@ -1,3 +1,4 @@
+
 function doGet() {
   return HtmlService.createTemplateFromFile('index')
       .evaluate()
@@ -20,8 +21,6 @@ function obtenerEducadores() {
 
 
 function obtenerObservaciones(idEducador) {
-    console.log(`ID Educador Tipo: ${typeof idEducador}`); // log del tipo de idEducador
-
     const hojaObservaciones = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Observaciones');
     const data = hojaObservaciones.getRange(2, 1, hojaObservaciones.getLastRow(), 4).getValues(); // También he corregido el rango aquí
 
@@ -40,8 +39,6 @@ function obtenerObservaciones(idEducador) {
 
 
 if(!observaciones) return [];
-console.log(`Total Observations found: ${observaciones.length}`);
-console.log(observaciones);
     return observaciones;
 }
 
